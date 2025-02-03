@@ -1,11 +1,8 @@
 from uuid import uuid4
-from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_chroma import Chroma
-
-## Example: to understand the evaluator but following is from openai
-from langchain.evaluation import load_evaluator
 
 # Get ollama embeddings
 from langchain_ollama import OllamaEmbeddings
@@ -13,19 +10,9 @@ from dotenv import load_dotenv
 import os
 import shutil
 
-DATA_PATH = "data/books"
 CHROMA_PATH = "chroma-db"
 
 embeddings = OllamaEmbeddings(model="llama3.2")
-
-## Example snippet: what is a vector
-example_vector = embeddings.embed_query("apple")
-#print(example_vector)
-#print(len(example_vector))
-#This evaluator is from openai package, find llama equivalent
-example_evaluator = load_evaluator("pairwise_embedding_distance")
-x = example_evaluator.evaluate_string_pairs(prediction="apple", prection_b="orange");
-print(x)
 
 vector_store = Chroma(
                collection_name="example_collection",
@@ -37,20 +24,21 @@ def main():
 
 def generate_data_store():
     documents = load_documents()
-    #chunks = split_text(documents)
-    #save_to_chroma(chunks)
+    chunks = split_text(documents)
+    save_to_chroma(chunks)
 
 def load_documents():
-    loader = DirectoryLoader(DATA_PATH, glob="*.md")
+    file_path = "./data/EA9181_protocol.pdf"
+    loader = PyPDFLoader(file_path)
     documents = loader.load()
     return documents
 
 def split_text(documents: list[Document]):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=500,
+        chunk_size=800,
+        chunk_overlap=80,
         length_function=len,
-        add_start_index=True,
+        is_separator_regex=False,
     )
     
     docs = []
