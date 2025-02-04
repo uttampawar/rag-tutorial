@@ -1,1 +1,5 @@
 chroma-db
+data/*
+pdf_chroma-db
+_pycache__
+
